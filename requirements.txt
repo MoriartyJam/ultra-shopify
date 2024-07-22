@@ -8,3 +8,4 @@ six==1.16.0
 tzlocal==5.2
 urllib3==2.2.2
 Flask
+gunicorn
