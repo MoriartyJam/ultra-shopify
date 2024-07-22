@@ -77,7 +77,7 @@ def robust_request(url, method='get', headers=None, data=None, params=None, retr
     return None  # or raise an exception for critical processes
 
 scheduler = BackgroundScheduler()
-scheduler.add_job(update_shopify_inventory, 'interval', minutes=120)
+scheduler.add_job(update_shopify_inventory, 'interval', minutes=5)
 scheduler.start()
 
 try:
