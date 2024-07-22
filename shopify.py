@@ -57,6 +57,50 @@ def get_variant_id_by_sku(sku):
             break
     return None
 
+def get_inventory_item_id(variant_id):
+    print(f"Fetching inventory item ID for variant: {variant_id}")
+    url = f'{shopify_store_url}/variants/{variant_id}.json'
+    headers = {
+        'Content-Type': 'application/json',
+        'X-Shopify-Access-Token': access_token
+    }
+    response = robust_request(url, method='get', headers=headers)
+    if response and response.status_code == 200:
+        return response.json()['variant']['inventory_item_id']
+    return None
+
+def update_shopify_inventory():
+    print("Updating Shopify inventory...")
+    product_data = fetch_product_balance()
+    if product_data:
+        for item in product_data:
+            if item['vendorCode'] and item['count'] is not None:
+                sku = item['vendorCode']
+                variant_id = get_variant_id_by_sku(sku)
+                if variant_id:
+                    inventory_item_id = get_inventory_item_id(variant_id)
+                    if inventory_item_id:
+                        count = max(0, floor(item['count']))
+                        url = f'{shopify_store_url}/inventory_levels/set.json'
+                        data = {
+                            'location_id': 89053102423,
+                            'inventory_item_id': inventory_item_id,
+                            'available': count
+                        }
+                        headers = {
+                            'Content-Type': 'application/json',
+                            'X-Shopify-Access-Token': access_token
+                        }
+                        response = robust_request(url, method='post', headers=headers, data=data)
+                        if response and response.status_code == 200:
+                            print(f"Successfully updated SKU {sku} with count {count}")
+                        else:
+                            print(f"Failed to update SKU {sku}: {response.status_code} {response.text}")
+                    else:
+                        print(f"Failed to find inventory item for SKU {sku}")
+                else:
+                    print(f"SKU {sku} not found in Shopify.")
+
 def robust_request(url, method='get', headers=None, data=None, params=None, retries=5, backoff_factor=0.3):
     print(f"Requesting {url} with method {method}")
     for attempt in range(retries):
@@ -85,3 +129,4 @@ try:
         time.sleep(60)
 except (KeyboardInterrupt, SystemExit):
     scheduler.shutdown()
+
