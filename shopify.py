@@ -147,7 +147,7 @@ executors = {
 }
 
 scheduler = BackgroundScheduler(executors=executors)
-scheduler.add_job(func=update_shopify_inventory, trigger='interval', minutes=5)
+scheduler.add_job(func=update_shopify_inventory, trigger='interval', minutes=160)
 scheduler.start()
 
 if __name__ == '__main__':
