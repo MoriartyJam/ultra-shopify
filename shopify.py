@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from math import floor
 from flask import Flask, jsonify
 from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.executors.pool import ThreadPoolExecutor
 import time
 
 
@@ -141,7 +142,11 @@ def update_shopify_inventory():
 def index():
     return "The scheduler is running. Check your console for output."
 
-scheduler = BackgroundScheduler()
+executors = {
+    'default': ThreadPoolExecutor(20)
+}
+
+scheduler = BackgroundScheduler(executors=executors)
 scheduler.add_job(func=update_shopify_inventory, trigger='interval', minutes=5)
 scheduler.start()
 
